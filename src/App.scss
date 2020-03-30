@@ -1,0 +1,79 @@
+@import url("https://fonts.googleapis.com/css?family=Baloo+Thambi+2&display=swap");
+
+html {
+  box-sizing: border-box;
+  font-family: "Baloo Thambi 2", cursive;
+  font-size: 10px;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+#root {
+  width: 100%;
+  height: 100%;
+}
+
+.App {
+  width: 100%;
+  height: 100%;
+}
+
+.mapContainer {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .mapBox {
+    width: 100%;
+    height: 100%;
+
+    .mapboxgl-popup {
+      font-family: "Baloo Thambi 2", cursive;
+      font-size: 10px;
+      padding: 0;
+      margin: 0;
+      color: #424242;
+    }
+    .mapboxgl-popup-tip {
+      // Add tip styles
+    }
+    .mapboxgl-popup-content {
+      padding: 1rem;
+      margin: 0;
+
+      > * {
+        margin: 0 0 0.5rem;
+        padding: 0;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+      }
+
+      p {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid rgba(black, 0.2);
+
+        b {
+          font-size: 1.6rem;
+          color: #212121;
+          padding: 0 5px;
+        }
+      }
+
+      img {
+        width: 4rem;
+        height: 4rem;
+      }
+    }
+  }
+}
