@@ -44,7 +44,6 @@ function App() {
     if (data) {
       mapboxInstanceRef.current = new mapboxgl.Map({
         container: mapboxElRef.current,
-        //style: "mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k",
         style: "mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k",
         ...INITIAL_VIEW_STATE,
         antialias: true
@@ -70,14 +69,18 @@ function App() {
               "interpolate",
               ["linear"],
               ["get", "cases"],
-              0,
-              5,
+              1,
+              4,
               1000,
-              5,
-              2000,
+              8,
+              4000,
               10,
+              8000,
+              14,
+              12000,
+              18,
               100000,
-              60
+              50
             ],
             "circle-color": [
               "interpolate",
@@ -99,39 +102,49 @@ function App() {
               "#b10026"
             ],
             "circle-opacity": 0.75,
-            "circle-stroke-width": 1
+            "circle-stroke-width": [
+              "interpolate",
+              ["linear"],
+              ["get", "cases"],
+              1,
+              1,
+              100000,
+              1.75
+            ]
           }
         });
 
-        var popup = new mapboxgl.Popup({
+        const popup = new mapboxgl.Popup({
           closeButton: false,
           closeOnClick: false
         });
 
         mapboxInstanceRef.current.on("mouseenter", "circles", function(e) {
           mapboxInstanceRef.current.getCanvas().style.cursor = "pointer";
+
           const { cases, deaths, country, province } = e.features[0].properties;
           const coordinates = e.features[0].geometry.coordinates.slice();
 
           const countryISO =
-            (lookup.byCountry(country)?.iso2 || lookup.byFips(country)?.iso2) ??
-            "";
+            lookup.byCountry(country)?.iso2 || lookup.byFips(country)?.iso2;
+          const provinceHTML =
+            province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
+          const mortalityRate = ((deaths / cases) * 100).toFixed(2);
+          const countryFlagHTML = Boolean(countryISO)
+            ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
+            : "";
 
+          const HTML = `<p>Country: <b>${country}</b></p>
+              ${provinceHTML}
+              <p>Cases: <b>${cases}</b></p>
+              <p>Deaths: <b>${deaths}</b></p>
+              <p>Mortality Rate: <b>${mortalityRate}%</b></p>
+              ${countryFlagHTML}`;
+
+          // Keep the tooltip properly positioned when zooming out
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
           }
-
-          const HTML = `<p>Country: <b>${country}</b></p>
-              ${
-                province !== "null" ? `<p>Province: <b>${province}</b></p>` : ""
-              }
-              <p>Cases: <b>${cases}</b></p>
-              <p>Deaths: <b>${deaths}</b></p>
-              ${
-                Boolean(countryISO)
-                  ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
-                  : ""
-              }`;
 
           popup
             .setLngLat(coordinates)
