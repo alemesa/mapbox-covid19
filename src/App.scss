@@ -14,66 +14,43 @@ body {
   overflow: hidden;
 }
 
-#root {
+#root,
+.App,
+.mapContainer,
+.mapBox {
   width: 100%;
   height: 100%;
 }
 
-.App {
-  width: 100%;
-  height: 100%;
+.mapboxgl-popup {
+  font-family: "Baloo Thambi 2", cursive;
+  font-size: 10px;
+  padding: 0;
+  margin: 0;
+  color: #424242;
 }
 
-.mapContainer {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.mapboxgl-popup-content {
+  padding: 1rem;
+  margin: 0;
 
-  .mapBox {
-    width: 100%;
-    height: 100%;
+  > * {
+    margin: 0 0 0.5rem;
+    padding: 0;
+  }
 
-    .mapboxgl-popup {
-      font-family: "Baloo Thambi 2", cursive;
-      font-size: 10px;
-      padding: 0;
-      margin: 0;
-      color: #424242;
+  p {
+    border-bottom: 1px solid rgba(black, 0.2);
+
+    b {
+      font-size: 1.6rem;
+      color: #212121;
+      padding: 0 5px;
     }
-    .mapboxgl-popup-tip {
-      // Add tip styles
-    }
-    .mapboxgl-popup-content {
-      padding: 1rem;
-      margin: 0;
+  }
 
-      > * {
-        margin: 0 0 0.5rem;
-        padding: 0;
-
-        &:last-child {
-          margin-bottom: 0;
-        }
-      }
-
-      p {
-        display: flex;
-        align-items: center;
-        border-bottom: 1px solid rgba(black, 0.2);
-
-        b {
-          font-size: 1.6rem;
-          color: #212121;
-          padding: 0 5px;
-        }
-      }
-
-      img {
-        width: 4rem;
-        height: 4rem;
-      }
-    }
+  img {
+    width: 4rem;
+    height: 4rem;
   }
 }

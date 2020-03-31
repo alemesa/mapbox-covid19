@@ -1,23 +1,15 @@
-import React, { memo, useRef, useEffect } from "react";
-import useSWR from "swr";
+import React, { useRef, useEffect } from "react";
 import mapboxgl from "mapbox-gl";
+import useSWR from "swr";
 import lookup from "country-code-lookup";
-
 import "./App.scss";
+// Need mapbox css for tooltips later in the tutorial
 import "mapbox-gl/dist/mapbox-gl.css";
 
 mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
 
-const INITIAL_VIEW_STATE = {
-  center: [16, 27],
-  zoom: 2,
-  pitch: 20,
-  bearing: 0
-};
-
 function App() {
-  const mapboxInstanceRef = useRef(null);
-  const mapboxElRef = useRef(null);
+  const mapboxElRef = useRef(null); // DOM element to render map
 
   const fetcher = url =>
     fetch(url)
@@ -40,19 +32,22 @@ function App() {
 
   const { data } = useSWR("https://corona.lmao.ninja/v2/jhucsse", fetcher);
 
+  // Initialize our map
   useEffect(() => {
     if (data) {
-      mapboxInstanceRef.current = new mapboxgl.Map({
+      const map = new mapboxgl.Map({
         container: mapboxElRef.current,
         style: "mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k",
-        ...INITIAL_VIEW_STATE,
-        antialias: true
+        center: [16, 27],
+        zoom: 2
       });
 
-      mapboxInstanceRef.current.addControl(new mapboxgl.NavigationControl());
+      // Add navigation controls to the top right of the canvas
+      map.addControl(new mapboxgl.NavigationControl());
 
-      mapboxInstanceRef.current.once("load", function() {
-        mapboxInstanceRef.current.addSource("points", {
+      map.once("load", function() {
+        // Add our SOURCE
+        map.addSource("points", {
           type: "geojson",
           data: {
             type: "FeatureCollection",
@@ -60,11 +55,22 @@ function App() {
           }
         });
 
-        mapboxInstanceRef.current.addLayer({
+        // Add our layer
+        map.addLayer({
           id: "circles",
-          source: "points",
+          source: "points", // this should be the id of source
           type: "circle",
           paint: {
+            "circle-opacity": 0.75,
+            "circle-stroke-width": [
+              "interpolate",
+              ["linear"],
+              ["get", "cases"],
+              1,
+              1,
+              100000,
+              1.75
+            ],
             "circle-radius": [
               "interpolate",
               ["linear"],
@@ -100,16 +106,6 @@ function App() {
               "#e31a1c",
               100000,
               "#b10026"
-            ],
-            "circle-opacity": 0.75,
-            "circle-stroke-width": [
-              "interpolate",
-              ["linear"],
-              ["get", "cases"],
-              1,
-              1,
-              100000,
-              1.75
             ]
           }
         });
@@ -119,8 +115,9 @@ function App() {
           closeOnClick: false
         });
 
-        mapboxInstanceRef.current.on("mouseenter", "circles", function(e) {
-          mapboxInstanceRef.current.getCanvas().style.cursor = "pointer";
+        map.on("mouseenter", "circles", function(e) {
+          // Change the pointer type on mouseenter
+          map.getCanvas().style.cursor = "pointer";
 
           const { cases, deaths, country, province } = e.features[0].properties;
           const coordinates = e.features[0].geometry.coordinates.slice();
@@ -141,7 +138,7 @@ function App() {
               <p>Mortality Rate: <b>${mortalityRate}%</b></p>
               ${countryFlagHTML}`;
 
-          // Keep the tooltip properly positioned when zooming out
+          // Keep the tooltip properly positioned when
           while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
             coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
           }
@@ -149,32 +146,25 @@ function App() {
           popup
             .setLngLat(coordinates)
             .setHTML(HTML)
-            .addTo(mapboxInstanceRef.current);
+            .addTo(map);
         });
 
-        mapboxInstanceRef.current.on("mouseleave", "circles", function() {
-          mapboxInstanceRef.current.getCanvas().style.cursor = "";
+        map.on("mouseleave", "circles", function() {
+          map.getCanvas().style.cursor = "";
           popup.remove();
         });
       });
     }
-
-    return () => {
-      if (mapboxInstanceRef.current) mapboxInstanceRef.current.remove();
-    };
   }, [data]);
 
   return (
     <div className="App">
       <div className="mapContainer">
+        {/* Mapbox Container */}
         <div className="mapBox" ref={mapboxElRef} />
       </div>
     </div>
   );
 }
 
-App.propTypes = {};
-
-App.defaultProps = {};
-
-export default memo(App);
+export default App;
