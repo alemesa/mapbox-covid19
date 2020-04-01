@@ -1,12 +1,12 @@
 <h1>How to create a COVID-19 Map with Mapbox and React</h1>
 
-In the current state of the world 🗺️ and with many countries in lockdown this is a good time to learn how to create a COVID-19 map like the [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6). Our map will be simpler, is up to you to add more features.
+In the current state of the world 🦠 and with many countries in lockdown this is the perfect time to learn how to create a COVID-19 map like the [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6). Our map will be simpler, is up to you to add more features.
 
-This is what we will build ⭐https://mapbox-covid19.netlify.com/, thanks to Mapbox ease of use this is a lot easier than you might think.
+This is what we will build ⭐https://mapbox-covid19.netlify.com/, thanks to Mapbox's ease of use this is a lot easier than you might think.
 
 🗒️`NOTE`: I will use React because is my favorite framework/library and scss for writing css.
 
-This will be a long tutorial but if you have no patience like me... here are all the links you need, and also scroll to the bottom for an extended list of resources or click this 👉 <a href="#resources">link</a>.
+This will be a long tutorial but if you have no patience like me... here are all the links you need. You can also scroll to the bottom for an extended list of resources or click 👉 <a href="#resources">here</a>.
 
 ---
 
@@ -18,7 +18,7 @@ This will be a long tutorial but if you have no patience like me... here are all
 
 `CodeSandbox`: https://codesandbox.io/s/mapbox-covid19-8sni6 (using the access key from Mapbox tutorial lol - might stop working at some point)
 
-`COVID-19 🦠 Data`: https://docs.corona.lmao-xd.wtf/version-2
+`COVID-19 Data`: https://docs.corona.lmao-xd.wtf/version-2
 
 <h2 id="tutorial">Tutorial</h2>
 
@@ -75,7 +75,7 @@ To initialize mapbox you need 4 things:
 - DOM container where we will render the map
 - A styled map to use:
   - You could use mapbox default `mapbox://styles/mapbox/streets-v11`
-  - But for this tutorial we will use [Le-Shine theme](https://www.mapbox.com/gallery/#lè-shine) by talented the Nat Slaughter - he works for Apple as a map designer.
+  - But for this tutorial we will use [Le-Shine theme](https://www.mapbox.com/gallery/#lè-shine) by the talented Nat Slaughter - he works for Apple as a map designer.
 - Initial geolocation
   - You can use this [tool](https://demos.mapbox.com/location-helper/) to find your preferred geolocation
   - For the tutorial, we will use a zoomed-out view of the world to show the impact of COVID-19
@@ -209,7 +209,7 @@ The response looks like this
 },...]
 ```
 
-We will use [swr](https://swr.now.sh/) by the talented [Zeit](https://zeit.co/home) team to fetch the data and convert it to a mapbox geojson style data which should look like this:
+We will use [swr](https://swr.now.sh/) by the skilled [Zeit](https://zeit.co/home) team to fetch the data and convert it to a mapbox geojson style data which should look like this:
 
 ```js
 data: {
@@ -233,9 +233,9 @@ data: {
 }
 ```
 
-Mapbox works by providing a source (your `data` object) and a layer (we will use circle style for this tutorial)
+Mapbox works by providing a source (your `data` object) and a layer (we will use _circle_ style for this tutorial)
 
-🗒️`NOTE`: you need to reference the source id on the layer.
+🗒️`NOTE`: You need to reference the source ID on the layer.
 
 By putting together these concepts your code should look like this by now:
 
@@ -271,6 +271,7 @@ function App() {
       // Call this method when the map is loaded
       map.once("load", function() {
         // Add our SOURCE
+        // with id "points"
         map.addSource("points", {
           type: "geojson",
           data: {
@@ -308,7 +309,7 @@ function App() {
 
 🌋Now we have a problem: Every dot is equal and COVID-19 impact in the world is certainly not equal - so we will increase the radius of each circle depending on the number of cases.
 
-For this, we will use something called data-driven-styling, here is a good [tutorial](https://blog.mapbox.com/introducing-data-driven-styling-in-mapbox-gl-js-f273121143c3)
+For this, we will use something called data-driven-styling, here is a good [tutorial](https://blog.mapbox.com/introducing-data-driven-styling-in-mapbox-gl-js-f273121143c3).
 
 In short, this is a way to alter the `paint` properties of a layer.
 
@@ -325,11 +326,11 @@ It looks like this for circle-radius:
    ],
 ```
 
-This 👆probably looks like some dark magic but is not, what this piece of code is doing is:
+This 👆probably looks like some dark magic but it's not, this piece of code is doing the following:
 
-1. We `interpolate` the data which is just a fancy word for mapping one range to the other one
-2. We will do it linearly
-3. We will use the `cases` property that we defined before and then we map in a one range to the other one
+1. We `interpolate` the data which is just a fancy word for mapping one range (amount of cases) to another one (circle-radius).
+2. We will do it linearly.
+3. We will use the `cases` property that we defined before to map it to the paint property `circle-radius`.
 
 For example:
 
@@ -337,11 +338,11 @@ For example:
 - `50000` active cases = radius `25`
 - `100000` active cases = radius `50`
 
-Therefore for example, if you have `75000` cases mapbox will create a radius of `37.5` as a midpoint between 25 and 50
+Thus, if for instance we have `75000` cases mapbox will create a radius of `37.5` as a midpoint between 25 and 50.
 
 🗒️`NOTE`: Mapbox will properly scale the radius as you zoom in.
 
-🗒️`NOTE`: You might need to change this range as the virus increases in numbers since sadly 100k will be the norm and not the upper limit.
+🗒️`NOTE`: You might need to change this range as the virus increases in numbers since sadly 100000 will be the norm and not the upper limit.
 
 For our tutorial we will use a specific scale system:
 
@@ -362,11 +363,11 @@ paint: {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this in your screen:
+📍`Checkpoint`: Now, you should have something like this in your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/shs3qclxbghhgdwmc5ni.png"/>
 
-Now we will do the same for the circle-color property
+Next we will do the same for the circle-color property.
 
 I'm going to use a color palette from colorbrewer2.org which has palettes that are dedicated for maps - this is the specific one we will use 👉 [link 🔗](https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=7)
 
@@ -411,14 +412,14 @@ paint: {
 
 <h3 id="tooltips">5. Add tooltips on hover 📍</h3>
 
-🌋Now we have another problem that the map doesn't tell much beyond the perceived perspective of the damage of the virus on each country so we will add some extra data on hover so people can check specific data for each country
+🌋Now we have another issue: the map doesn't tell much beyond the perceived perspective of the damage of the virus on each country so we will add some extra data on hover so people can check specific data for each country.
 
-We will add a mouse enter and mouse leave listener to the `circles` layer and we will do some stuff in there.
+We will add a mouse enter and mouse leave listener to the `circles` layer and we will do some stuff in there:
 
 - We will toggle the cursor style from pointer to default
 - We will create an HTML element to insert into the tooltip, this is the data we will use:
   - Country
-  - Province (if exists)
+  - Province or State (if it exists)
   - Cases
   - Deaths
   - Mortality Rate (deaths / cases)
@@ -488,19 +489,19 @@ Find the completed code here - CodeSandbox: https://codesandbox.io/s/mapbox-covi
 
 {% codesandbox mapbox-covid19-8sni6 %}
 
-<h2 id="challenges">Challenges</h2>
+<h2 id="next_steps">Next Steps</h2>
 
-Some ideas to take this further are:
+Some ideas to take this further:
 
 - Filtering by country
 - Filter by deaths instead of cases
 - Add a sidebar with some general information, maybe use another API
-- Make the breakpoints for colors dynamic to the data
-- Save data to local storage so you don't hit the API that often - make the local storage expire every day for example
+- Make the ranges dynamic to the data, instead of hard-coding 100000 as the upper limit, we could fetch the country with the biggest amount of cases and divide by 7 and create a dynamic range.
+- Save data to local storage so you don't hit the API that often - for example, you can make the local storage expire every day for example
 
 <h2 id="resources">Resources / References</h2>
 
-[Leigh Halliday 📺](https://www.youtube.com/channel/UCWPY8W-FAZ2HdDiJp2RC_sQ) - Youtube Channel that has a lot of high-quality videos some about Mapbox. He also deserves many more followers :)
+[Leigh Halliday 📺](https://www.youtube.com/channel/UCWPY8W-FAZ2HdDiJp2RC_sQ) - Youtube Channel that has many high-quality videos, including some about Mapbox. He also deserves a lot more followers :)
 
 | Color Palettes
 
@@ -519,11 +520,11 @@ Some ideas to take this further are:
 
 <h2 id="covid">COVID-19 awereness</h2>
 
-Stay safe 😷 and stay home 🏘️, this a good time to learn new stuff and put Netflix on the side... for a bit, Netflix is awesome.
+Stay safe 😷 and stay home 🏘️, this a good time to learn new stuff and put Netflix on the side... for a bit (Netflix is awesome).
 
 <h2 id="credits">Credits</h2>
 
-Two of my talented teammates at [Jam3](https://www.jam3.com/) with whom I did a project using Mapbox and I learned a couple of things along the way
+These are two of my talented teammates at [Jam3](https://www.jam3.com/) with whom I learned a couple of things during a project that used Mapbox.
 
 - Bonnie Pham - [bonnichiwa](https://github.com/bonnichiwa)
 - Yuri Murenko - [ymurenko](https://github.com/ymurenko)
