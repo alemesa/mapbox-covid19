@@ -2,8 +2,8 @@
 
 html {
   box-sizing: border-box;
-  font-family: "Baloo Thambi 2", cursive;
   font-size: 10px;
+  font-family: "Baloo Thambi 2", cursive;
 }
 
 body {
@@ -37,6 +37,10 @@ body {
   > * {
     margin: 0 0 0.5rem;
     padding: 0;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
   }
 
   p {
@@ -50,7 +54,24 @@ body {
   }
 
   img {
-    width: 4rem;
-    height: 4rem;
+    display: block;
+    width: 3rem;
+    height: 3rem;
+  }
+}
+
+// Not part of the tutorial
+.source {
+  background-color: rgba(white, 0.5);
+  padding: 0.2rem 2rem;
+  font-size: 1.4rem;
+  position: absolute;
+  top: 100%;
+  transform: translateY(-100%) translateX(-50%);
+  left: 50%;
+
+  a {
+    color: #4264fb;
+    text-decoration: none;
   }
 }

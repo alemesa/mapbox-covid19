@@ -15,17 +15,21 @@ function App() {
     fetch(url)
       .then(r => r.json())
       .then(data =>
-        data.map(p => ({
+        data.map((point, index) => ({
           type: "Feature",
           geometry: {
             type: "Point",
-            coordinates: [p.coordinates.longitude, p.coordinates.latitude]
+            coordinates: [
+              point.coordinates.longitude,
+              point.coordinates.latitude
+            ]
           },
           properties: {
-            country: p.country,
-            province: p.province,
-            cases: p.stats.confirmed,
-            deaths: p.stats.deaths
+            id: index,
+            country: point.country,
+            province: point.province,
+            cases: point.stats.confirmed,
+            deaths: point.stats.deaths
           }
         }))
       );
@@ -86,7 +90,7 @@ function App() {
               12000,
               18,
               100000,
-              50
+              40
             ],
             "circle-color": [
               "interpolate",
@@ -118,11 +122,16 @@ function App() {
         let lastId;
 
         map.on("mousemove", "circles", e => {
-          const { cases, deaths, country, province } = e.features[0].properties;
-          const id = country + province;
+          const id = e.features[0].properties.id;
 
-          if (e.features[0].geometry.coordinates[0] !== lastId) {
+          if (id !== lastId) {
             lastId = id;
+            const {
+              cases,
+              deaths,
+              country,
+              province
+            } = e.features[0].properties;
 
             // Change the pointer type on mouseenter
             map.getCanvas().style.cursor = "pointer";
@@ -130,7 +139,8 @@ function App() {
             const coordinates = e.features[0].geometry.coordinates.slice();
 
             const countryISO =
-              lookup.byCountry(country)?.iso2 || lookup.byFips(country)?.iso2;
+              lookup.byCountry(country)?.iso2 ||
+              lookup.byInternet(country)?.iso2;
             const provinceHTML =
               province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
             const mortalityRate = ((deaths / cases) * 100).toFixed(2);
@@ -145,7 +155,9 @@ function App() {
               <p>Mortality Rate: <b>${mortalityRate}%</b></p>
               ${countryFlagHTML}`;
 
-            // Keep the tooltip properly positioned when
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
             while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
               coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
             }
@@ -157,7 +169,8 @@ function App() {
           }
         });
 
-        map.on("mouseleave", "circles", function() {
+        map.on("mouseleave", "circles", function(e) {
+          lastId = undefined;
           map.getCanvas().style.cursor = "";
           popup.remove();
         });
@@ -168,8 +181,21 @@ function App() {
   return (
     <div className="App">
       <div className="mapContainer">
-        {/* Mapbox Container */}
+        {/* Mapbox container */}
         <div className="mapBox" ref={mapboxElRef} />
+      </div>
+      {/* Source container - not part of the tutorial */}
+      <div className="source">
+        <span role="img" aria-label="computer">
+          🖥️
+        </span>
+        <a
+          href="https://github.com/alemesa/mapbox-covid19"
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Source code
+        </a>
       </div>
     </div>
   );
