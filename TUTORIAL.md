@@ -1,24 +1,25 @@
 <h1>How to create a COVID-19 Map with Mapbox and React</h1>
 
-In the current state of the world 🦠 and with many countries in lockdown this is the perfect time to learn how to create a COVID-19 map like the [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6). Our map will be simpler, is up to you to add more features.
+In the current state of the world 🦠 with many of us in lockdown, I thought it would be a good time to put down Netflix for a bit :) and build something like the [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6)
 
-This is what we will build ⭐https://mapbox-covid19.netlify.com/, thanks to Mapbox's ease of use this is a lot easier than you might think.
+Our version will be way simpler but it's up to you to include more features.
 
-🗒️`NOTE`: I will use React because is my favorite framework/library and scss for writing css.
+This is what we will build ⭐https://mapbox-covid19.netlify.com/⭐, thanks to Mapbox's ease of use this is a lot easier than you might think.
 
 This will be a long tutorial but if you have no patience like me... here are all the links you need. You can also scroll to the bottom for an extended list of resources or click 👉 <a href="#resources">here</a>.
+
+🗒️`NOTE`: I will use React because it is my favourite framework/library and scss for writing css.
 
 ---
 
 🔗**Links**:
 
-`Live Demo`: https://mapbox-covid19.netlify.com/
+- `Live Demo`: https://mapbox-covid19.netlify.com/
+- `Github Repo`: https://github.com/alemesa/mapbox-covid19
+- `CodeSandbox`: https://codesandbox.io/s/mapbox-covid19-8sni6 (using the access key from Mapbox tutorial lol - might stop working at some point)
+- `COVID-19 Data`: https://docs.corona.lmao-xd.wtf/version-2
 
-`Github Repo`: https://github.com/alemesa/mapbox-covid19
-
-`CodeSandbox`: https://codesandbox.io/s/mapbox-covid19-8sni6 (using the access key from Mapbox tutorial lol - might stop working at some point)
-
-`COVID-19 Data`: https://docs.corona.lmao-xd.wtf/version-2
+---
 
 <h2 id="tutorial">Tutorial</h2>
 
@@ -32,7 +33,7 @@ Let's get started with the tutorial
 <li><a href="#add_data">3. Add COVID-19 data</a></li>
 <li><a href="#scale_data">4. Scale and colorize circles</a></li>
 <li><a href="#tooltips">5. Add tooltips on hover</a></li>
-<li><a href="#complete_code">6. Complete Code</a></li>
+<li><a href="#complete_project">6. Complete Project</a></li>
 </ul>
 
 ---
@@ -181,7 +182,7 @@ body {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this in your screen:
+📍`Checkpoint`: At this point, you should have something like this on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/jh91d51a37k9mn70j9q5.png"/>
 
@@ -211,6 +212,8 @@ The response looks like this
 
 We will use [swr](https://swr.now.sh/) by the skilled [Zeit](https://zeit.co/home) team to fetch the data and convert it to a mapbox geojson style data which should look like this:
 
+`NOTE`: Notice how we're adding a unique id to each point property which we will use later for the tooltip functionality
+
 ```js
 data: {
   type: "FeatureCollection",
@@ -223,6 +226,7 @@ data: {
         },
         // you can add anything you want to the properties object
         properties: {
+          id: 'unique_id'
           country: 'Canada',
           province: 'Ontario',
           cases: 1355,
@@ -235,7 +239,7 @@ data: {
 
 Mapbox works by providing a source (your `data` object) and a layer (we will use _circle_ style for this tutorial)
 
-🗒️`NOTE`: You need to reference the source ID on the layer.
+🗒️`NOTE`: You need to reference the source ID on the layer, they need to go hand in hand.
 
 By putting together these concepts your code should look like this by now:
 
@@ -245,17 +249,21 @@ function App() {
     fetch(url)
       .then(r => r.json())
       .then(data =>
-        data.map(p => ({
+        data.map((point, index) => ({
           type: "Feature",
           geometry: {
             type: "Point",
-            coordinates: [p.coordinates.longitude, p.coordinates.latitude]
+            coordinates: [
+              point.coordinates.longitude,
+              point.coordinates.latitude
+            ]
           },
           properties: {
-            country: p.country,
-            province: p.province,
-            cases: p.stats.confirmed,
-            deaths: p.stats.deaths
+            id: index, // unique identifier
+            country: point.country,
+            province: point.province,
+            cases: point.stats.confirmed,
+            deaths: point.stats.deaths
           }
         }))
       );
@@ -299,7 +307,7 @@ function App() {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this in your screen:
+📍`Checkpoint`: At this point, you should have something like this on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/ypae5irlwg4rfkgfpp0f.png"/>
 
@@ -338,7 +346,7 @@ For example:
 - `50000` active cases = radius `25`
 - `100000` active cases = radius `50`
 
-Thus, if for instance we have `75000` cases mapbox will create a radius of `37.5` as a midpoint between 25 and 50.
+Thus, if for instance, we have `75000` cases mapbox will create a radius of `37.5` as a midpoint between 25 and 50.
 
 🗒️`NOTE`: Mapbox will properly scale the radius as you zoom in.
 
@@ -358,12 +366,12 @@ paint: {
 +     4000, 10,
 +     8000, 14,
 +     12000, 18,
-+     100000, 50
++     100000, 40
 +   ],
 }
 ```
 
-📍`Checkpoint`: Now, you should have something like this in your screen:
+📍`Checkpoint`: Now, you should have something like this on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/shs3qclxbghhgdwmc5ni.png"/>
 
@@ -404,7 +412,7 @@ paint: {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this in your screen:
+📍`Checkpoint`: At this point, you should have something like this on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/pieex4fconynmr42ab06.png"/>
 
@@ -414,16 +422,17 @@ paint: {
 
 🌋Now we have another issue: the map doesn't tell much beyond the perceived perspective of the damage of the virus on each country so we will add some extra data on hover so people can check specific data for each country.
 
-We will add a mouse enter and mouse leave listener to the `circles` layer and we will do some stuff in there:
+We will add a mouse move and mouse leave listener to the `circles` layer and we will do some stuff in there:
 
-- We will toggle the cursor style from pointer to default
-- We will create an HTML element to insert into the tooltip, this is the data we will use:
+- Toggle the cursor style from pointer to default
+- Create an HTML element to insert into the tooltip, this is the data we will use:
   - Country
   - Province or State (if it exists)
   - Cases
   - Deaths
   - Mortality Rate (deaths / cases)
   - Flag (for this we will use `country-lookup-code` in combination with [Country flags API](https://www.countryflags.io))
+- Keep track of the id of the element being hovered - that way if the points are too close together we guarantee that the tooltip still switches position
 
 ```js
 // After your mapbox layer code inside the 'load' event
@@ -434,60 +443,77 @@ const popup = new mapboxgl.Popup({
   closeOnClick: false
 });
 
-// Mouse enter event
-map.on("mouseenter", "circles", function(e) {
-  // Change the pointer type on mouseenter
-  map.getCanvas().style.cursor = "pointer";
+// Mouse move event
+map.on("mousemove", "circles", e => {
+  // Get the id from the properties
+  const id = e.features[0].properties.id;
 
-  const { cases, deaths, country, province } = e.features[0].properties;
-  const coordinates = e.features[0].geometry.coordinates.slice();
+  // Only if the id are different we process the tooltip
+  if (id !== lastId) {
+    lastId = id;
 
-  // Get all data for the tooltip
-  const countryISO =
-    lookup.byCountry(country)?.iso2 || lookup.byFips(country)?.iso2;
-  const provinceHTML =
-    province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
-  const mortalityRate = ((deaths / cases) * 100).toFixed(2);
-  const countryFlagHTML = Boolean(countryISO)
-    ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
-    : "";
+    // Change the pointer type on move move
+    map.getCanvas().style.cursor = "pointer";
 
-  const HTML = `<p>Country: <b>${country}</b></p>
+    const { cases, deaths, country, province } = e.features[0].properties;
+    const coordinates = e.features[0].geometry.coordinates.slice();
+
+    // Get all data for the tooltip
+    const countryISO =
+      lookup.byCountry(country)?.iso2 || lookup.byInternet(country)?.iso2;
+
+    const provinceHTML =
+      province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
+
+    const mortalityRate = ((deaths / cases) * 100).toFixed(2);
+
+    const countryFlagHTML = Boolean(countryISO)
+      ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
+      : "";
+
+    const HTML = `<p>Country: <b>${country}</b></p>
               ${provinceHTML}
               <p>Cases: <b>${cases}</b></p>
               <p>Deaths: <b>${deaths}</b></p>
               <p>Mortality Rate: <b>${mortalityRate}%</b></p>
               ${countryFlagHTML}`;
 
-  // Keep the tooltip properly positioned when
-  while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-    coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-  }
+    // Ensure that if the map is zoomed out such that multiple
+    // copies of the feature are visible, the popup appears
+    // over the copy being pointed to.
+    while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+      coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+    }
 
-  popup
-    .setLngLat(coordinates)
-    .setHTML(HTML)
-    .addTo(map);
+    popup
+      .setLngLat(coordinates)
+      .setHTML(HTML)
+      .addTo(map);
+  }
 });
 
 // Mouse leave event
 map.on("mouseleave", "circles", function() {
+  // Reset the last Id
+  lastId = undefined;
   map.getCanvas().style.cursor = "";
   popup.remove();
 });
 ```
 
-📍`Checkpoint`: At this point, you should have something like this in your screen:
+📍`Checkpoint`: At this point, you should have something like this on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/5gbm67pftxe51e3g7hw0.png"/>
 
 ---
 
-<h3 id="complete_code">Complete Code</h3>
+<h3 id="complete_project">Complete Project</h3>
 
 Find the completed code here - CodeSandbox: https://codesandbox.io/s/mapbox-covid19-8sni6 - feel free to insert your own access token since that one might not work after a while
 
 {% codesandbox mapbox-covid19-8sni6 %}
+
+---
 
 <h2 id="next_steps">Next Steps</h2>
 
@@ -499,32 +525,42 @@ Some ideas to take this further:
 - Make the ranges dynamic to the data, instead of hard-coding 100000 as the upper limit, we could fetch the country with the biggest amount of cases and divide by 7 and create a dynamic range.
 - Save data to local storage so you don't hit the API that often - for example, you can make the local storage expire every day for example
 
+---
+
 <h2 id="resources">Resources / References</h2>
 
-[Leigh Halliday 📺](https://www.youtube.com/channel/UCWPY8W-FAZ2HdDiJp2RC_sQ) - Youtube Channel that has many high-quality videos, including some about Mapbox. He also deserves a lot more followers :)
+[Leigh Halliday 📺](https://www.youtube.com/channel/UCWPY8W-FAZ2HdDiJp2RC_sQ) - YouTube Channel that has many high-quality videos, including some about Mapbox. He also deserves a lot more followers :)
 
-| Color Palettes
+**Color Palettes**
 
 [Color Palette Sequence for maps 🔗](https://colorbrewer2.org/?type=sequential&scheme=YlGnBu&n=7#type=sequential&scheme=YlOrRd&n=7)
 [Great Color Palette 🔗](https://www.colorbox.io/)
 [Carto 🔗](https://carto.com/carto-colors/)
 
-| Mapbox Links
+**Mapbox Links**
 
 [Gallery of Mapbox themes 🔗](https://www.mapbox.com/gallery)
 [Location Helper 🔗](https://demos.mapbox.com/location-helper/)
-[Data driven styling tutorial 🔗](https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
+[Data-driven styling tutorial 🔗](https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/)
 [Popup on hover tutorial 🔗](https://docs.mapbox.com/mapbox-gl-js/example/popup-on-hover/)
 
-| COVID-19 Links
+**COVID-19 Links**
 
-<h2 id="covid">COVID-19 awereness</h2>
+[Covid API 🔗](https://docs.corona.lmao-xd.wtf/version-2)
+[Another good API 🔗](https://covid19.mathdro.id/api)
 
-Stay safe 😷 and stay home 🏘️, this a good time to learn new stuff and put Netflix on the side... for a bit (Netflix is awesome).
+---
+
+<h2 id="covid">COVID-19 awareness</h2>
+
+And..... that's it, we're done, stay safe 😷 and stay home 🏘️.
+Now you can go back and finish Tiger King 🐅👑
+
+---
 
 <h2 id="credits">Credits</h2>
 
-These are two of my talented teammates at [Jam3](https://www.jam3.com/) with whom I learned a couple of things during a project that used Mapbox.
+Two of my talented teammates at [Jam3](https://www.jam3.com/) with whom I learned a couple of things during a project that used Mapbox.
 
 - Bonnie Pham - [bonnichiwa](https://github.com/bonnichiwa)
 - Yuri Murenko - [ymurenko](https://github.com/ymurenko)
