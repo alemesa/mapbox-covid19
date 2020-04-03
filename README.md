@@ -1,5 +1,7 @@
 <h1 align="center">Welcome to mapbox-covid19 👋</h1>
 
+[![Netlify Status](https://api.netlify.com/api/v1/badges/97f38441-0fc1-4aac-b409-a11db658d9fb/deploy-status)](https://app.netlify.com/sites/mapbox-covid19/deploys)
+
 > COVID Map using Mapbox and React
 
 - ✨ [Demo](https://mapbox-covid19.netlify.com/)
