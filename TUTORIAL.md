@@ -1,10 +1,10 @@
-<h1>How to create a COVID-19 Map with Mapbox and React</h1>
+<h1>How to create a COVID-19 map with Mapbox and React</h1>
 
-In the current state of the world 🦠 with many of us in lockdown, I thought it would be a good idea to put down Netflix for a bit :) and build something like the [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6)
+In the current state of the world 🦠 and with many of us in lockdown, I thought it would be a good idea to put down Netflix for a bit, and build a COVID map similar to [Hopkins Dashboard](https://gisanddata.maps.arcgis.com/apps/opsdashboard/index.html#/bda7594740fd40299423467b48e9ecf6).
 
 Our version will be simpler but it's up to you to include more features.
 
-This is what we are going to build ⭐https://mapbox-covid19.netlify.com/⭐. Thanks to Mapbox's ease of use this is a lot easier than you might think.
+This is what we are going to build ⭐ https://mapbox-covid19.netlify.com/ ⭐. Thanks to Mapbox's ease of use this is a lot easier than you might think.
 
 This will be a long tutorial but if you have no patience like me... here are all the links you need. You can also scroll to the bottom for an extended list of resources or click 👉 <a href="#resources">here</a>.
 
@@ -40,6 +40,12 @@ Let's get started with the tutorial
 
 <h3 id="initial_setup">1. Initial Setup</h3>
 
+Ideally, you should clone this [CodeSandbox](https://codesandbox.io/s/mapbox-covid19-init-3pg2t) which has everything setup, including the css and an empty map initialized.
+
+{% codesandbox mapbox-covid19-init-3pg2t %}
+
+But if you wish you can also use something like [create-react-app](https://create-react-app.dev/):
+
 ```sh
 # Create a new folder using create-react-app and cd into it
 npx create-react-app mapbox-covid
@@ -60,41 +66,37 @@ Next up: Clean up all the files that come by default, especially do this:
 - remove everything from App.css
 - rename App.css to App.scss to use sass
 
-You can also follow along with this [CodeSandbox](https://codesandbox.io/s/mapbox-covid19-init-3pg2t) which has everything setup, including the css and an empty map initialized.
-
-{% codesandbox mapbox-covid19-init-3pg2t %}
-
 ---
 
 <h3 id="setup_mapbox">2. Setup Mapbox 🗺️</h3>
 
 Get an account from https://account.mapbox.com/ and your access token will be in your account dashboard.
 
-To initialize mapbox you need 4 things:
+To initialize Mapbox you need 4 things:
 
 - Your access token (which you just got)
 - DOM container where to render the map
 - A styled map to use:
-  - You could use mapbox default `mapbox://styles/mapbox/streets-v11`
+  - You could use Mapbox's default `mapbox://styles/mapbox/streets-v11`.
   - But for this tutorial we will use [Le-Shine theme](https://www.mapbox.com/gallery/#lè-shine) by the talented Nat Slaughter - he works for Apple as a map designer.
-- Initial geolocation
+- Initial geolocation:
   - You can use this [tool](https://demos.mapbox.com/location-helper/) to find your geolocation values.
   - For this, let's use a very zoomed-out view of the world to show the impact of COVID-19.
 
-This is the condensed code for `App.js` after putting together 👆these steps.
+This is the condensed code for `App.js` after putting together 👆 these steps.
 
 ```js
-import React, { useRef, useEffect } from "react";
-import mapboxgl from "mapbox-gl";
-import useSWR from "swr"; // React hook to fetch the data
-import lookup from "country-code-lookup"; // npm module to get ISO Code for countries
+import React, { useRef, useEffect } from 'react';
+import mapboxgl from 'mapbox-gl';
+import useSWR from 'swr'; // React hook to fetch the data
+import lookup from 'country-code-lookup'; // npm module to get ISO Code for countries
 
-import "./App.scss";
+import './App.scss';
 
 // Mapbox css - needed to make tooltips work later in this article
-import "mapbox-gl/dist/mapbox-gl.css";
+import 'mapbox-gl/dist/mapbox-gl.css';
 
-mapboxgl.accessToken = "your-access-token";
+mapboxgl.accessToken = 'your-access-token';
 
 function App() {
   const mapboxElRef = useRef(null); // DOM element to render map
@@ -104,7 +106,7 @@ function App() {
     // You can store the map instance with useRef too
     const map = new mapboxgl.Map({
       container: mapboxElRef.current,
-      style: "mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k",
+      style: 'mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k',
       center: [16, 27], // initial geo location
       zoom: 2 // initial zoom
     });
@@ -126,7 +128,7 @@ function App() {
 export default App;
 ```
 
-- Next, let's add some css to `App.scss`, this will include the css for the tooltip portion of the tutorial
+- Next, let's add some css to `App.scss`, this will include the css for the tooltip portion of the tutorial.
 
 ```css
 /* This usually goes in the global but let's keep it here
@@ -150,7 +152,7 @@ body {
 
 /* Tooltip code */
 .mapboxgl-popup {
-  font-family: "Baloo Thambi 2", cursive;
+  font-family: 'Baloo Thambi 2', cursive;
   font-size: 10px;
   padding: 0;
   margin: 0;
@@ -199,7 +201,7 @@ We're going to be using this API:
 
 Let's use this API path https://corona.lmao.ninja/v2/jhucsse which returns a list of countries or provinces with COVID-19 stats.
 
-The response looks like this
+The response looks like this:
 
 ```json
 [{
@@ -236,7 +238,7 @@ data: {
 }
 ```
 
-🗒️`NOTE`: Notice how I'm adding a unique id to each point's properties object which we will use later for the tooltip functionality
+🗒️`NOTE`: Notice how I'm adding a unique id to each point's properties object which we will use later for the tooltip functionality.
 
 ---
 
@@ -255,13 +257,13 @@ For example:
 
 ```js
 // once map load
-map.once("load", function() {
+map.once('load', function () {
   // Add our source
-  map.addSource("points", options);
+  map.addSource('points', options);
 
   // Add our layer
   map.addLayer({
-    source: "points" // source id
+    source: 'points' // source id
   });
 });
 ```
@@ -272,18 +274,15 @@ By putting together these concepts your code should look like this by now:
 
 ```js
 function App() {
-  const fetcher = url =>
+  const fetcher = (url) =>
     fetch(url)
-      .then(r => r.json())
-      .then(data =>
+      .then((r) => r.json())
+      .then((data) =>
         data.map((point, index) => ({
-          type: "Feature",
+          type: 'Feature',
           geometry: {
-            type: "Point",
-            coordinates: [
-              point.coordinates.longitude,
-              point.coordinates.latitude
-            ]
+            type: 'Point',
+            coordinates: [point.coordinates.longitude, point.coordinates.latitude]
           },
           properties: {
             id: index, // unique identifier in this case the index
@@ -296,7 +295,7 @@ function App() {
       );
 
   // Fetching our data with swr package
-  const { data } = useSWR("https://corona.lmao.ninja/v2/jhucsse", fetcher);
+  const { data } = useSWR('https://corona.lmao.ninja/v2/jhucsse', fetcher);
 
   useEffect(() => {
     if (data) {
@@ -305,28 +304,28 @@ function App() {
       });
 
       // Call this method when the map is loaded
-      map.once("load", function() {
+      map.once('load', function () {
         // Add our SOURCE
         // with id "points"
-        map.addSource("points", {
-          type: "geojson",
+        map.addSource('points', {
+          type: 'geojson',
           data: {
-            type: "FeatureCollection",
+            type: 'FeatureCollection',
             features: data
           }
         });
 
         // Add our layer
         map.addLayer({
-          id: "circles",
-          source: "points", // this should be the id of the source
-          type: "circle",
+          id: 'circles',
+          source: 'points', // this should be the id of the source
+          type: 'circle',
           // paint properties
           paint: {
-            "circle-opacity": 0.75,
-            "circle-stroke-width": 1,
-            "circle-radius": 4,
-            "circle-color": "#FFEB3B"
+            'circle-opacity': 0.75,
+            'circle-stroke-width': 1,
+            'circle-radius': 4,
+            'circle-color': '#FFEB3B'
           }
         });
       });
@@ -335,7 +334,7 @@ function App() {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this on your screen:
+📍`Checkpoint`: If everything went well, you should have something like this:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/ypae5irlwg4rfkgfpp0f.png"/>
 
@@ -407,7 +406,7 @@ paint: {
 
 Next, let's do the same for the circle-color property.
 
-I'm going to use a color palette from [colorbrewer2](https://colorbrewer2.org/) which has palettes that are made specific for maps - this is the one I picked 👉 [link 🔗](https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=7)
+I'm going to use a color palette from [colorbrewer2](https://colorbrewer2.org/) which has palettes that are made specifically for maps - this is the one I picked 👉 [link 🔗](https://colorbrewer2.org/#type=sequential&scheme=YlOrRd&n=7).
 
 ```diff
 paint: {
@@ -442,7 +441,7 @@ paint: {
 }
 ```
 
-📍`Checkpoint`: At this point, you should have something like this on your screen:
+📍`Checkpoint`: At this point, you should have this nice looking map going on your screen:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/pieex4fconynmr42ab06.png"/>
 
@@ -450,11 +449,11 @@ paint: {
 
 <h3 id="tooltips">5. Add tooltips on hover 📍</h3>
 
-🌋Now we have another issue: the map doesn't tell much beyond the perceived perspective of the impact of the virus on each country, to solve this let's add country or province specific data on hover.
+🌋Now we have another issue: the map doesn't tell much beyond the perceived perspective of the impact of the virus on each country, to solve this let's add country/province unique data on hover.
 
 Let's add a mouse move and mouse leave listener to the `circles` layer and let's do the following steps:
 
-- Toggle the cursor style from pointer to default
+- Toggle the cursor style from pointer to default.
 - Create an HTML element to insert into the tooltip, this is the data we will use:
   - Country
   - Province or State (if it exists)
@@ -462,9 +461,9 @@ Let's add a mouse move and mouse leave listener to the `circles` layer and let's
   - Deaths
   - Mortality Rate (deaths / cases)
   - Flag (for this we will use `country-lookup-code` npm package in combination with [Country flags API](https://www.countryflags.io))
-- Keep track of the id of the country being hovered - this way if the points are too close together we guarantee that the tooltip still switches position
+- Keep track of the id of the country being hovered - this way if the points are too close together we guarantee that the tooltip still switches position.
 
-🗒️`NOTE`: If there is enough space in between your points you can use `mouseenter` of `mousemove` instead which only gets called when entering the layer
+🗒️`NOTE`: If there is enough space in between your points you can use `mouseenter` of `mousemove` instead which only gets called when entering the layer.
 
 ```js
 // After your mapbox layer code inside the 'load' event
@@ -475,11 +474,11 @@ const popup = new mapboxgl.Popup({
   closeOnClick: false
 });
 
-// Variable to hold the active country / province on hover
+// Variable to hold the active country/province on hover
 let lastId;
 
 // Mouse move event
-map.on("mousemove", "circles", e => {
+map.on('mousemove', 'circles', (e) => {
   // Get the id from the properties
   const id = e.features[0].properties.id;
 
@@ -488,23 +487,21 @@ map.on("mousemove", "circles", e => {
     lastId = id;
 
     // Change the pointer type on move move
-    map.getCanvas().style.cursor = "pointer";
+    map.getCanvas().style.cursor = 'pointer';
 
     const { cases, deaths, country, province } = e.features[0].properties;
     const coordinates = e.features[0].geometry.coordinates.slice();
 
     // Get all data for the tooltip
-    const countryISO =
-      lookup.byCountry(country)?.iso2 || lookup.byInternet(country)?.iso2;
+    const countryISO = lookup.byCountry(country)?.iso2 || lookup.byInternet(country)?.iso2;
 
-    const provinceHTML =
-      province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
+    const provinceHTML = province !== 'null' ? `<p>Province: <b>${province}</b></p>` : '';
 
     const mortalityRate = ((deaths / cases) * 100).toFixed(2);
 
     const countryFlagHTML = Boolean(countryISO)
       ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
-      : "";
+      : '';
 
     const HTML = `<p>Country: <b>${country}</b></p>
               ${provinceHTML}
@@ -520,23 +517,20 @@ map.on("mousemove", "circles", e => {
       coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
     }
 
-    popup
-      .setLngLat(coordinates)
-      .setHTML(HTML)
-      .addTo(map);
+    popup.setLngLat(coordinates).setHTML(HTML).addTo(map);
   }
 });
 
 // Mouse leave event
-map.on("mouseleave", "circles", function() {
+map.on('mouseleave', 'circles', function () {
   // Reset the last Id
   lastId = undefined;
-  map.getCanvas().style.cursor = "";
+  map.getCanvas().style.cursor = '';
   popup.remove();
 });
 ```
 
-📍`Checkpoint`: At this point, you should have something like this on your screen:
+📍`Checkpoint`: At this point, you should be done and it should look like this 🍾:
 
 <img src="https://dev-to-uploads.s3.amazonaws.com/i/5gbm67pftxe51e3g7hw0.png"/>
 
@@ -544,7 +538,7 @@ map.on("mouseleave", "circles", function() {
 
 <h3 id="complete_project">Complete Project</h3>
 
-Find the completed code here - [CodeSandbox](https://codesandbox.io/s/mapbox-covid19-8sni6) - feel free to insert your access token since that one might not work after a while
+Find the completed code here - [CodeSandbox](https://codesandbox.io/s/mapbox-covid19-8sni6) - feel free to insert your access token since that one might not work after a while.
 
 {% codesandbox mapbox-covid19-8sni6 %}
 
@@ -554,11 +548,11 @@ Find the completed code here - [CodeSandbox](https://codesandbox.io/s/mapbox-cov
 
 Some ideas to take this further:
 
-- Filtering by country
-- Filter by deaths instead of cases
-- Add a sidebar with some general information, maybe use another API
+- Filtering by country.
+- Filter by deaths instead of cases.
+- Add a sidebar with some general information, maybe use another API.
 - Make the ranges dynamic to the data, instead of hard-coding 100000 as the upper limit, you could fetch the country with the biggest amount of cases and divide by 7 and create a dynamic range.
-- Save data to local storage so you don't hit the API that often - for example, you can make the local storage expire every day for example
+- Save data to local storage so you don't hit the API that often - for example, you can make the local storage expire every 24 hours.
 
 ---
 
@@ -590,7 +584,7 @@ Some ideas to take this further:
 <h2 id="covid">COVID-19 awareness</h2>
 
 And..... that's it, we're done, stay safe 😷 and stay home 🏘️.
-Now you can go back to Netflix and finish Tiger King 🐅👑
+Now you can go back to Netflix and binge Tiger King 🐅👑.
 
 ---
 

@@ -5,7 +5,7 @@
 > COVID Map using Mapbox and React
 
 - ✨ [Demo](https://mapbox-covid19.netlify.com/)
-- 📝 [Dev.to tutorial](https://dev.to/alemesa/mapbox-1np9-temp-slug-5215637?preview=455fe9c60e0be17c11b6724f784c925c749ea4903d142879007ca81ce828269365b3e54ce828eba13a88288a9e8178445214a68d81a66a5f4f7355d1)
+- 📝 [Dev.to tutorial](https://dev.to/alemesa/how-to-create-a-covid-19-map-with-mapbox-and-react-3jgf)
 - 🖥️ [Markdown tutorial](./TUTORIAL.md)
 
 ## Usage
