@@ -36,15 +36,26 @@ function App() {
   // Initialize our map
   useEffect(() => {
     if (data) {
+      const average = data.reduce((total, next) => total + next.properties.cases, 0) / data.length;
+      const min = Math.min(...data.map((item) => item.properties.cases));
+      const max = Math.max(...data.map((item) => item.properties.cases));
+
       const map = new mapboxgl.Map({
         container: mapboxElRef.current,
         style: 'mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k',
-        center: [16, 27],
-        zoom: 2
+        center: [-98, 37], // North America
+        zoom: 3
       });
 
       // Add navigation controls to the top right of the canvas
       map.addControl(new mapboxgl.NavigationControl());
+
+      // Add navigation to center the map on your geo location
+      map.addControl(
+        new mapboxgl.GeolocateControl({
+          fitBoundsOptions: { maxZoom: 6 }
+        })
+      );
 
       map.once('load', function () {
         // Add our SOURCE
@@ -63,41 +74,41 @@ function App() {
           type: 'circle',
           paint: {
             'circle-opacity': 0.75,
-            'circle-stroke-width': ['interpolate', ['linear'], ['get', 'cases'], 1, 1, 100000, 1.75],
+            'circle-stroke-width': ['interpolate', ['linear'], ['get', 'cases'], 1, 1, max, 1.75],
             'circle-radius': [
               'interpolate',
               ['linear'],
               ['get', 'cases'],
               1,
-              4,
+              min,
               1000,
               8,
-              4000,
+              average / 4,
               10,
-              8000,
+              average / 2,
               14,
-              12000,
+              average,
               18,
-              100000,
-              40
+              max,
+              50
             ],
             'circle-color': [
               'interpolate',
               ['linear'],
               ['get', 'cases'],
-              1,
+              min,
               '#ffffb2',
-              5000,
+              max / 32,
               '#fed976',
-              10000,
+              max / 16,
               '#feb24c',
-              25000,
+              max / 8,
               '#fd8d3c',
-              50000,
+              max / 4,
               '#fc4e2a',
-              75000,
+              max / 2,
               '#e31a1c',
-              100000,
+              max,
               '#b10026'
             ]
           }
@@ -130,11 +141,11 @@ function App() {
               : '';
 
             const HTML = `<p>Country: <b>${country}</b></p>
-              ${provinceHTML}
-              <p>Cases: <b>${cases}</b></p>
-              <p>Deaths: <b>${deaths}</b></p>
-              <p>Mortality Rate: <b>${mortalityRate}%</b></p>
-              ${countryFlagHTML}`;
+                ${provinceHTML}
+                <p>Cases: <b>${cases}</b></p>
+                <p>Deaths: <b>${deaths}</b></p>
+                <p>Mortality Rate: <b>${mortalityRate}%</b></p>
+                ${countryFlagHTML}`;
 
             // Ensure that if the map is zoomed out such that multiple
             // copies of the feature are visible, the popup appears
@@ -159,7 +170,7 @@ function App() {
   return (
     <div className="App">
       <div className="mapContainer">
-        {/* Mapbox container */}
+        {/* Mapbox Container */}
         <div className="mapBox" ref={mapboxElRef} />
       </div>
       {/* Source container - not part of the tutorial */}

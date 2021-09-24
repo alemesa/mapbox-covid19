@@ -32,8 +32,9 @@ Let's get started with the tutorial
 <li><a href="#setup_mapbox">2. Setup Mapbox</a></li>
 <li><a href="#add_data">3. Add COVID-19 data</a></li>
 <li><a href="#scale_data">4. Scale and colorize circles</a></li>
-<li><a href="#tooltips">5. Add tooltips on hover</a></li>
-<li><a href="#complete_project">6. Complete Project</a></li>
+<li><a href="#interpolate">5. Interpolate values to the dataset [2021 Update]</a></li>
+<li><a href="#tooltips">6. Add tooltips on hover</a></li>
+<li><a href="#complete_project">7. Complete Project</a></li>
 </ul>
 
 ---
@@ -107,12 +108,19 @@ function App() {
     const map = new mapboxgl.Map({
       container: mapboxElRef.current,
       style: 'mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k',
-      center: [16, 27], // initial geo location
-      zoom: 2 // initial zoom
+      center: [-98, 37], // initial geo location
+      zoom: 3 // initial zoom
     });
 
     // Add navigation controls to the top right of the canvas
     map.addControl(new mapboxgl.NavigationControl());
+
+    // Add navigation control to center your map on your location
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        fitBoundsOptions: { maxZoom: 6 }
+      })
+    );
   }, []);
 
   return (
@@ -213,7 +221,7 @@ The response looks like this:
 },...]
 ```
 
-We will use [swr](https://swr.now.sh/) by the skilled [Zeit](https://zeit.co/home) team to fetch the data and convert it to a mapbox geojson formatted data which should look like this:
+We will use [swr](https://swr.vercel.app/) by the skilled [Vercel](https://vercel.com) team to fetch the data and convert it to a mapbox geojson formatted data which should look like this:
 
 ```js
 data: {
@@ -377,6 +385,8 @@ Thus, if for instance, we have `75000` cases mapbox will create a radius of `37.
 
 🗒️`NOTE`: You might need to change this range as the virus increases in numbers since sadly 100000 will be the norm and not the upper limit.
 
+📆 `[2021 Update]` This 👆 sadly happened and is addressed on <a href="#interpolate">5. Interpolate values to the dataset</a>
+
 For our tutorial we won't use a fully linear approach, our scale system will have some steps to better represent the data, but the interpolation between these will be linear.
 
 This is how it looks but feel free to tweak it:
@@ -447,7 +457,93 @@ paint: {
 
 ---
 
-<h3 id="tooltips">5. Add tooltips on hover 📍</h3>
+<h3 id="interpolate"> 5. Interpolate values to the dataset [2021 Update]</h3>
+
+When I made this tutorial I thought that COVID numbers will never pass 100000 cases per province or country, turns out I was sadly very mistaken.
+
+In order to future proof our app we need to create a proportional linear scale (interpolation) in order to do this we need to find the min, max and average of the dataset.
+
+```js
+const average = data.reduce((total, next) => total + next.properties.cases, 0) / data.length;
+
+const min = Math.min(...data.map((item) => item.properties.cases));
+
+const max = Math.max(...data.map((item) => item.properties.cases));
+```
+
+<h4>Circle Radius Update</h4>
+
+```diff
+paint: {
+-   "circle-radius": { /* Old scale */},
++   "circle-radius": [
++     "interpolate",
++       ["linear"],
++       ["get", "cases"],
++       1,
++       min,
++       1000,
++       8,
++       average / 4,
++       10,
++       average / 2,
++       14,
++       average,
++       18,
++       max,
++       50
++   ],
+}
+```
+
+<h4>Circle Color Update</h4>
+
+```diff
+paint: {
+-   "circle-color": { /* Old scale */},
++   "circle-color": [
++     "interpolate",
++       ["linear"],
++       ["get", "cases"],
++       min,
++       "#ffffb2",
++       max / 32,
++       "#fed976",
++       max / 16,
++       "#feb24c",
++       max / 8,
++       "#fd8d3c",
++       max / 4,
++       "#fc4e2a",
++       max / 2,
++       "#e31a1c",
++       max,
++       "#b10026"
++    ]
+}
+```
+
+<h4>Circle Stroke Width Update</h4>
+
+```diff
+paint: {
+-   "circle-stroke-width": { /* Old scale */},
++   "circle-stroke-width": [
++      "interpolate",
++      ["linear"],
++      ["get", "cases"],
++      1,
++      1,
++      max,
++      1.75
++    ],
+```
+
+You can play around with these values to create your own scale
+
+---
+
+<h3 id="tooltips">6. Add tooltips on hover 📍</h3>
 
 🌋Now we have another issue: the map doesn't tell much beyond the perceived perspective of the impact of the virus on each country, to solve this let's add country/province unique data on hover.
 
