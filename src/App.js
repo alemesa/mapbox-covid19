@@ -1,12 +1,13 @@
-import React, { useRef, useEffect } from 'react';
-import mapboxgl from 'mapbox-gl';
-import useSWR from 'swr';
-import lookup from 'country-code-lookup';
-import './App.scss';
+import React, { useRef, useEffect } from "react";
+import mapboxgl from "mapbox-gl";
+import useSWR from "swr";
+import lookup from "country-code-lookup";
+import "./App.scss";
 // Need mapbox css for tooltips later in the tutorial
-import 'mapbox-gl/dist/mapbox-gl.css';
+import "mapbox-gl/dist/mapbox-gl.css";
 
-mapboxgl.accessToken = process.env.REACT_APP_MAPBOX_ACCESS_TOKEN;
+mapboxgl.accessToken =
+  "pk.eyJ1IjoidHJib3QiLCJhIjoiY2s3NmFscm1xMTV0MDNmcXFyOWp1dGhieSJ9.tR2IMHDqBPOf_AeGjHOKFA";
 
 function App() {
   const mapboxElRef = useRef(null); // DOM element to render map
@@ -16,10 +17,13 @@ function App() {
       .then((r) => r.json())
       .then((data) =>
         data.map((point, index) => ({
-          type: 'Feature',
+          type: "Feature",
           geometry: {
-            type: 'Point',
-            coordinates: [point.coordinates.longitude, point.coordinates.latitude]
+            type: "Point",
+            coordinates: [
+              point.coordinates.longitude,
+              point.coordinates.latitude
+            ]
           },
           properties: {
             id: index,
@@ -31,20 +35,22 @@ function App() {
         }))
       );
 
-  const { data } = useSWR('https://disease.sh/v3/covid-19/jhucsse', fetcher);
+  const { data } = useSWR("https://disease.sh/v3/covid-19/jhucsse", fetcher);
 
   // Initialize our map
   useEffect(() => {
     if (data) {
-      const average = data.reduce((total, next) => total + next.properties.cases, 0) / data.length;
+      const average =
+        data.reduce((total, next) => total + next.properties.cases, 0) /
+        data.length;
       const min = Math.min(...data.map((item) => item.properties.cases));
       const max = Math.max(...data.map((item) => item.properties.cases));
 
       const map = new mapboxgl.Map({
         container: mapboxElRef.current,
-        style: 'mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k',
-        center: [-98, 37], // North America
-        zoom: 3
+        style: "mapbox://styles/notalemesa/ck8dqwdum09ju1ioj65e3ql3k",
+        center: [-98, 37], // North America - intial geo location
+        zoom: 3 // initial zoom
       });
 
       // Add navigation controls to the top right of the canvas
@@ -57,28 +63,36 @@ function App() {
         })
       );
 
-      map.once('load', function () {
+      map.once("load", function () {
         // Add our SOURCE
-        map.addSource('points', {
-          type: 'geojson',
+        map.addSource("points", {
+          type: "geojson",
           data: {
-            type: 'FeatureCollection',
+            type: "FeatureCollection",
             features: data
           }
         });
 
         // Add our layer
         map.addLayer({
-          id: 'circles',
-          source: 'points', // this should be the id of source
-          type: 'circle',
+          id: "circles",
+          source: "points", // this should be the id of source
+          type: "circle",
           paint: {
-            'circle-opacity': 0.75,
-            'circle-stroke-width': ['interpolate', ['linear'], ['get', 'cases'], 1, 1, max, 1.75],
-            'circle-radius': [
-              'interpolate',
-              ['linear'],
-              ['get', 'cases'],
+            "circle-opacity": 0.75,
+            "circle-stroke-width": [
+              "interpolate",
+              ["linear"],
+              ["get", "cases"],
+              1,
+              1,
+              max,
+              1.75
+            ],
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["get", "cases"],
               1,
               min,
               1000,
@@ -92,24 +106,24 @@ function App() {
               max,
               50
             ],
-            'circle-color': [
-              'interpolate',
-              ['linear'],
-              ['get', 'cases'],
+            "circle-color": [
+              "interpolate",
+              ["linear"],
+              ["get", "cases"],
               min,
-              '#ffffb2',
+              "#ffffb2",
               max / 32,
-              '#fed976',
+              "#fed976",
               max / 16,
-              '#feb24c',
+              "#feb24c",
               max / 8,
-              '#fd8d3c',
+              "#fd8d3c",
               max / 4,
-              '#fc4e2a',
+              "#fc4e2a",
               max / 2,
-              '#e31a1c',
+              "#e31a1c",
               max,
-              '#b10026'
+              "#b10026"
             ]
           }
         });
@@ -121,24 +135,33 @@ function App() {
 
         let lastId;
 
-        map.on('mousemove', 'circles', (e) => {
+        map.on("mousemove", "circles", (e) => {
           const id = e.features[0].properties.id;
 
           if (id !== lastId) {
             lastId = id;
-            const { cases, deaths, country, province } = e.features[0].properties;
+            const {
+              cases,
+              deaths,
+              country,
+              province
+            } = e.features[0].properties;
 
             // Change the pointer type on mouseenter
-            map.getCanvas().style.cursor = 'pointer';
+            map.getCanvas().style.cursor = "pointer";
 
             const coordinates = e.features[0].geometry.coordinates.slice();
 
-            const countryISO = lookup.byCountry(country)?.iso2 || lookup.byInternet(country)?.iso2;
-            const provinceHTML = province !== 'null' ? `<p>Province: <b>${province}</b></p>` : '';
+            const countryISO =
+              lookup.byCountry(country)?.iso2 ||
+              lookup.byInternet(country)?.iso2;
+            const countryFlag = `https://raw.githubusercontent.com/stefangabos/world_countries/master/data/flags/64x64/${countryISO.toLowerCase()}.png`;
+            const provinceHTML =
+              province !== "null" ? `<p>Province: <b>${province}</b></p>` : "";
             const mortalityRate = ((deaths / cases) * 100).toFixed(2);
             const countryFlagHTML = Boolean(countryISO)
-              ? `<img src="https://www.countryflags.io/${countryISO}/flat/64.png"></img>`
-              : '';
+              ? `<img src="${countryFlag}"></img>`
+              : "";
 
             const HTML = `<p>Country: <b>${country}</b></p>
                 ${provinceHTML}
@@ -158,9 +181,9 @@ function App() {
           }
         });
 
-        map.on('mouseleave', 'circles', function () {
+        map.on("mouseleave", "circles", function () {
           lastId = undefined;
-          map.getCanvas().style.cursor = '';
+          map.getCanvas().style.cursor = "";
           popup.remove();
         });
       });
@@ -173,17 +196,9 @@ function App() {
         {/* Mapbox Container */}
         <div className="mapBox" ref={mapboxElRef} />
       </div>
-      {/* Source container - not part of the tutorial */}
-      <div className="source">
-        <span role="img" aria-label="computer">
-          🖥️
-        </span>
-        <a href="https://github.com/alemesa/mapbox-covid19" target="_blank" rel="noreferrer noopener">
-          Source code
-        </a>
-      </div>
     </div>
   );
 }
 
 export default App;
+
