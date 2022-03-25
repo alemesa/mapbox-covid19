@@ -31,7 +31,7 @@ function App() {
         }))
       );
 
-  const { data } = useSWR('https://corona.lmao.ninja/v2/jhucsse', fetcher);
+  const { data } = useSWR('https://disease.sh/v3/covid-19/jhucsse', fetcher);
 
   // Initialize our map
   useEffect(() => {
